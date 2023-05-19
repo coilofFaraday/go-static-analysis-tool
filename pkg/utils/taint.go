@@ -3,8 +3,8 @@ package utils
 import (
 	"go/token"
 	"go/types"
-	"golang.org/x/tools/go/pkg/analysis"
-	"golang.org/x/tools/go/pkg/ssa"
+	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/ssa"
 	"hash/fnv"
 )
 
