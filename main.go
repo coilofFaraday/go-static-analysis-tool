@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/coiloffaraday/go-static-analysis-tool/rules"
-	"github.com/coiloffaraday/go-static-analysis-tool/ssa"
+	"github.com/coiloffaraday/go-static-analysis-tool/pkg/rules"
+	"github.com/coiloffaraday/go-static-analysis-tool/pkg/ssa"
 	"github.com/spf13/cobra"
 	"os"
 )

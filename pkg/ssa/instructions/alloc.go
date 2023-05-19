@@ -2,7 +2,7 @@ package instructions
 
 import (
 	"fmt"
-	"github.com/coiloffaraday/go-static-analysis-tool/utils"
+	"github.com/coiloffaraday/go-static-analysis-tool/pkg/utils"
 	"golang.org/x/tools/go/ssa"
 )
 
