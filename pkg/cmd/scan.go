@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/coiloffaraday/go-static-analysis-tool/pkg/analyzer/rules"
-	"github.com/coiloffaraday/go-static-analysis-tool/pkg/ssa"
 	"github.com/spf13/cobra"
+	"go-static-analysis-tool/pkg/analyzer/rules"
+	"go-static-analysis-tool/pkg/ssa"
 	"os"
 )
 

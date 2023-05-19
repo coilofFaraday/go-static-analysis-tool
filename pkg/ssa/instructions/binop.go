@@ -1,7 +1,7 @@
 package instructions
 
 import (
-	"github.com/go-static-analysis-tool/pkg/utils"
+	"go-static-analysis-tool/pkg/utils"
 	"golang.org/x/tools/go/ssa"
 )
 

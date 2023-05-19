@@ -1,8 +1,8 @@
 package rules
 
 import (
-	"github.com/coiloffaraday/go-static-analysis-tool/pkg/ssa"
-	"github.com/coiloffaraday/go-static-analysis-tool/pkg/utils"
+	"go-static-analysis-tool/pkg/ssa"
+	"go-static-analysis-tool/pkg/utils"
 )
 
 // SQLInjectionRule defines a rule for detecting SQL Injection vulnerabilities.
