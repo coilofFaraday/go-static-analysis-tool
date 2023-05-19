@@ -1,4 +1,4 @@
-package taint
+package utils
 
 import (
 	"go/token"

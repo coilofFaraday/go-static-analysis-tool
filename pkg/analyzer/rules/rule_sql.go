@@ -1,57 +1,54 @@
 package rules
 
 import (
-	"github.com/your_project/ssa"
-	"github.com/your_project/taint"
-	"github.com/your_project/utils"
+	"github.com/coiloffaraday/go-static-analysis-tool/ssa"
+	"github.com/coiloffaraday/go-static-analysis-tool/utils"
 )
 
-// RuleSQL is a rule for detecting SQL injection.
-type RuleSQL struct {
-	// The taint analyzer for this rule.
-	TaintAnalyzer *taint.TaintAnalyzer
+// SQLInjectionRule defines a rule for detecting SQL Injection vulnerabilities.
+type SQLInjectionRule struct{}
+
+// NewSQLInjectionRule creates a new SQLInjectionRule.
+func NewSQLInjectionRule() *SQLInjectionRule {
+	return &SQLInjectionRule{}
 }
 
-// NewRuleSQL creates a new RuleSQL.
-func NewRuleSQL() *RuleSQL {
-	return &RuleSQL{
-		TaintAnalyzer: taint.NewTaintAnalyzer(),
+// Name returns the name of this rule.
+func (r *SQLInjectionRule) Name() string {
+	return "sql_injection"
+}
+
+// Run applies the rule to the given function.
+func (r *SQLInjectionRule) Run(fn *ssa.Function, report utils.Reporter) {
+	// Define a set of functions that are known to be vulnerable to SQL injection.
+	vulnerableFuncs := map[string][]string{
+		"(*database/sql.DB)": {"Exec", "ExecContext", "Query", "QueryContext", "QueryRow", "QueryRowContext"},
 	}
-}
-
-// GetName returns the name of this rule.
-func (r *RuleSQL) GetName() string {
-	return "SQL Injection"
-}
-
-// GetID returns the ID of this rule.
-func (r *RuleSQL) GetID() string {
-	return "RULE_SQL"
-}
-
-// Check checks if the given SSA function contains a potential SQL injection.
-func (r *RuleSQL) Check(fn *ssa.Function) []*utils.Finding {
-	var findings []*utils.Finding
 
 	// Iterate over the instructions in the function.
-	for _, block := range fn.Blocks {
-		for _, instr := range block.Instrs {
-			// Check if the instruction is a call instruction.
-			call, ok := instr.(*ssa.Call)
-			if !ok {
-				continue
-			}
+	for _, instr := range fn.Instructions {
+		call, ok := instr.(*ssa.Call)
+		if !ok {
+			continue
+		}
 
-			// Check if the call is to a function that can execute SQL queries.
-			if utils.IsSQLQueryFunction(call.Call.Value) {
-				// Check if the argument to the function is tainted.
-				if r.TaintAnalyzer.IsTainted(call.Call.Args[0]) {
-					// If the argument is tainted, add a finding.
-					findings = append(findings, utils.NewFinding(fn, instr, r))
+		// Check if the function being called is in the list of vulnerable functions.
+		for pkg, funcs := range vulnerableFuncs {
+			for _, fn := range funcs {
+				if call.Call.StaticCallee().Pkg.Path() == pkg && call.Call.StaticCallee().Name() == fn {
+					// We found a call to a potentially vulnerable function.
+					// Now we need to check if any of the arguments to the function are tainted.
+					taintAnalyzer := utils.NewTaintAnalyzer()
+					argIndex := 1
+					if call.Call.StaticCallee().Name() == "Context" {
+						argIndex = 2
+					}
+					if taintAnalyzer.ContainsTaint(call, call.Call.Args[argIndex]) {
+						// We found a potential SQL injection vulnerability.
+						report.Add("可能存在SQL注入漏洞", fn, instr.Pos())
+					}
 				}
 			}
 		}
 	}
-
-	return findings
 }

@@ -1,8 +1,8 @@
 package ssa
 
 import (
-	"github.com/go-static-analysis-tool/instructions"
-	"github.com/go-static-analysis-tool/utils"
+	"github.com/coiloffaraday/go-static-analysis-tool/instructions"
+	"github.com/coiloffaraday/go-static-analysis-tool/utils"
 	"go/ast"
 	"go/importer"
 	"go/token"
