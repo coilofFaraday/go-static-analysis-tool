@@ -8,7 +8,7 @@ import (
 	"hash/fnv"
 )
 
-// TaintedCode is a struct that contains information about the vulnerable line of code
+// TaintedCode 是一个结构体，包含有关易受攻击的代码行的信息
 type TaintedCode struct {
 	SourceCode     string
 	SourceFilename string
@@ -16,32 +16,34 @@ type TaintedCode struct {
 	ParentFunction string
 }
 
-// MapData is a struct that contains information about each hash
+// MapData 是一个结构体，包含有关每个哈希的信息
 type MapData struct {
-	Mapped     bool // whether a hash has already been mapped
-	Vulnerable bool // whether a hash has been found vulnerable
-	Count      int  // the number of times a hash has been visited
+	Mapped     bool // 是否已经映射了一个哈希
+	Vulnerable bool // 是否发现一个哈希是易受攻击的
+	Count      int  // 一个哈希被访问的次数
 }
 
-// TaintAnalyzer is a struct that contains information about each taint analyzer
+// TaintAnalyzer 是一个结构体，包含有关每个污点分析器的信息
 type TaintAnalyzer struct {
-	taint_map   map[uint64]MapData
-	TaintSource []TaintedCode
-	pass        *analysis.Pass
-	location    token.Pos
+	taint_map     map[uint64]MapData
+	TaintSource   []TaintedCode
+	pass          *analysis.Pass
+	location      token.Pos
+	TaintedValues map[ssa.Value]bool
 }
 
-// CreateTaintAnalyzer returns a new TaintAnalyzer struct
+// CreateTaintAnalyzer 返回一个新的 TaintAnalyzer 结构体
 func CreateTaintAnalyzer(pass *analysis.Pass, location token.Pos) TaintAnalyzer {
 	return TaintAnalyzer{
-		make(map[uint64]MapData),
-		[]TaintedCode{},
-		pass,
-		location,
+		taint_map:     make(map[uint64]MapData),
+		TaintSource:   []TaintedCode{},
+		pass:          pass,
+		location:      location,
+		TaintedValues: make(map[ssa.Value]bool),
 	}
 }
 
-// ContainsTaint analyzes the ssa.Value, recursively traces the value to all possible sources, and returns True if any of the sources are vulnerable. It returns False otherwise.
+// ContainsTaint 分析 ssa.Value，递归追踪值到所有可能的源，如果任何源是易受攻击的，则返回 True。否则返回 False。
 func (ta *TaintAnalyzer) ContainsTaint(startCall *ssa.CallCommon, val *ssa.Value, cg CallGraph) bool {
 	return ta.ContainsTaintRecurse(startCall, val, cg, 0, []ssa.Value{})
 }

@@ -1,28 +1,26 @@
 package instructions
 
 import (
-	"go-static-analysis-tool/pkg/utils"
-	"golang.org/x/tools/go/ssa"
+	"github.com/yourusername/yourprojectname/ssa"
+	"github.com/yourusername/yourprojectname/utils"
 )
 
-// BinOpAnalyzer represents an analyzer for BinOp instructions.
+// BinOpAnalyzer 是一个结构体，包含有关每个二元操作分析器的信息
 type BinOpAnalyzer struct {
 	TaintAnalyzer *utils.TaintAnalyzer
 }
 
-// NewBinOpAnalyzer creates a new BinOpAnalyzer.
-func NewBinOpAnalyzer(taintAnalyzer *utils.TaintAnalyzer) *BinOpAnalyzer {
+// NewBinOpAnalyzer 返回一个新的 BinOpAnalyzer 结构体
+func NewBinOpAnalyzer(ta *utils.TaintAnalyzer) *BinOpAnalyzer {
 	return &BinOpAnalyzer{
-		TaintAnalyzer: taintAnalyzer,
+		TaintAnalyzer: ta,
 	}
 }
 
-// Analyze performs the analysis for BinOp instructions.
+// Analyze 分析一个 ssa.BinOp 指令。如果该指令的 X 或 Y 是污点，那么结果也是污点。
 func (a *BinOpAnalyzer) Analyze(instr *ssa.BinOp) {
-	// If either operand is tainted, mark the result as tainted.
+	// 如果 BinOp 指令的 X 或 Y 是污点，那么结果也是污点。
 	if a.TaintAnalyzer.TaintedValues[instr.X] || a.TaintAnalyzer.TaintedValues[instr.Y] {
 		a.TaintAnalyzer.TaintedValues[instr] = true
 	}
-
-	// TODO: Check for potential integer overflows, divisions by zero, etc.
 }

@@ -1,47 +1,31 @@
 package instructions
 
 import (
-	"fmt"
+	"go-static-analysis-tool/pkg/ssa"
 	"go-static-analysis-tool/pkg/utils"
-	"golang.org/x/tools/go/ssa"
 )
 
-// AllocAnalyzer represents an analyzer for Alloc instructions.
+// AllocAnalyzer 是一个结构体，包含有关每个分配分析器的信息
 type AllocAnalyzer struct {
 	TaintAnalyzer *utils.TaintAnalyzer
 	Allocations   map[*ssa.Alloc]bool
 }
 
-// NewAllocAnalyzer creates a new AllocAnalyzer.
-func NewAllocAnalyzer(taintAnalyzer *utils.TaintAnalyzer) *AllocAnalyzer {
+// NewAllocAnalyzer 返回一个新的 AllocAnalyzer 结构体
+func NewAllocAnalyzer(ta *utils.TaintAnalyzer) *AllocAnalyzer {
 	return &AllocAnalyzer{
-		TaintAnalyzer: taintAnalyzer,
+		TaintAnalyzer: ta,
 		Allocations:   make(map[*ssa.Alloc]bool),
 	}
 }
 
-// Analyze performs the analysis for Alloc instructions.
+// Analyze 分析一个 ssa.Alloc 指令。如果该指令的 Comment 是 "tainted"，则将结果标记为污点。然后，将分配标记为未释放。
 func (a *AllocAnalyzer) Analyze(instr *ssa.Alloc) {
 	// If the Alloc instruction's Comment is "tainted", mark the result as tainted.
-	if instr.Comment == "tainted" {
-		a.TaintAnalyzer.TaintedValues[instr] = true
+	if instr.Comment() == "tainted" {
+		a.TaintAnalyzer.TaintedValues[ssa.Value(instr)] = true
 	}
 
 	// Mark the allocation as not freed.
 	a.Allocations[instr] = false
-}
-
-// MarkAsFreed marks an allocation as freed.
-func (a *AllocAnalyzer) MarkAsFreed(instr *ssa.Alloc) {
-	a.Allocations[instr] = true
-}
-
-// CheckForLeaks checks for memory leaks.
-func (a *AllocAnalyzer) CheckForLeaks() {
-	for alloc, freed := range a.Allocations {
-		if !freed {
-			// TODO: Report a memory leak.
-			fmt.Printf("Potential memory leak: %v\n", alloc)
-		}
-	}
 }

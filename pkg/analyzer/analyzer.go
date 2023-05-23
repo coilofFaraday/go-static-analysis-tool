@@ -1,9 +1,12 @@
 package analyzer
 
 import (
+	"go/parser"
+	"golang.org/x/tools/go/loader"
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/ssa"
 	"golang.org/x/tools/go/ssa/ssautil"
+	"log"
 	"sync"
 )
 
@@ -14,7 +17,20 @@ type Analyzer struct {
 
 // NewAnalyzer creates a new Analyzer.
 func NewAnalyzer(pkgs []*packages.Package) *Analyzer {
-	prog := ssautil.CreateProgram(pkgs, ssa.GlobalDebug)
+	conf := loader.Config{
+		ParserMode: parser.ParseComments,
+	}
+
+	for _, pkg := range pkgs {
+		conf.Import(pkg.PkgPath)
+	}
+
+	program, err := conf.Load()
+	if err != nil {
+		log.Fatalf("Failed to load packages: %v", err)
+	}
+
+	prog := ssautil.CreateProgram(program, ssa.GlobalDebug)
 	prog.Build()
 	return &Analyzer{prog: prog}
 }
